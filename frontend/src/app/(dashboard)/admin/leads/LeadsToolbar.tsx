@@ -2,23 +2,40 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Download, Filter, RotateCcw } from 'lucide-react';
+import { Search, Download, Filter, RotateCcw, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
 import { downloadLeadsCsv } from '@/services/leads';
-import { LEAD_STATUSES, LEAD_STATUS_META, type LeadStatus } from '@/types';
+import {
+  LEAD_STATUSES,
+  LEAD_STATUS_META,
+  type LeadAssignee,
+  type LeadStatus,
+} from '@/types';
 import { cn } from '@/utils';
 
 interface LeadsToolbarProps {
   total: number;
+  /** Admin / super-admin only — allow CSV exports. */
+  canExport?: boolean;
+  /** Admin / super-admin only — render the assignee filter dropdown. */
+  canFilterAssignee?: boolean;
+  /** Pool of staff/admin users for the assignee filter. */
+  assignees?: LeadAssignee[];
 }
 
 /**
  * Toolbar above the CRM table. Drives the page's `?search` and `?status`
  * URL params, so the server component re-fetches with the new filters.
  */
-export const LeadsToolbar = ({ total }: LeadsToolbarProps) => {
+export const LeadsToolbar = ({
+  total,
+  canExport = false,
+  canFilterAssignee = false,
+  assignees = [],
+}: LeadsToolbarProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { push } = useToast();
@@ -27,6 +44,7 @@ export const LeadsToolbar = ({ total }: LeadsToolbarProps) => {
 
   const currentStatus = searchParams.get('status') ?? '';
   const currentSearch = searchParams.get('search') ?? '';
+  const currentAssignee = searchParams.get('assignedTo') ?? '';
   const [localSearch, setLocalSearch] = useState(currentSearch);
 
   const pushParams = (mutate: (next: URLSearchParams) => void) => {
@@ -51,11 +69,19 @@ export const LeadsToolbar = ({ total }: LeadsToolbarProps) => {
     });
   };
 
+  const onPickAssignee = (id: string) => {
+    pushParams((p) => {
+      if (id) p.set('assignedTo', id);
+      else p.delete('assignedTo');
+    });
+  };
+
   const onReset = () => {
     setLocalSearch('');
     pushParams((p) => {
       p.delete('search');
       p.delete('status');
+      p.delete('assignedTo');
     });
   };
 
@@ -104,19 +130,21 @@ export const LeadsToolbar = ({ total }: LeadsToolbarProps) => {
             size="md"
             onClick={onReset}
             leftIcon={<RotateCcw className="h-4 w-4" />}
-            disabled={!currentStatus && !currentSearch}
+            disabled={!currentStatus && !currentSearch && !currentAssignee}
           >
             Reset
           </Button>
-          <Button
-            type="button"
-            size="md"
-            onClick={onExport}
-            isLoading={isExporting}
-            leftIcon={<Download className="h-4 w-4" />}
-          >
-            Export CSV
-          </Button>
+          {canExport && (
+            <Button
+              type="button"
+              size="md"
+              onClick={onExport}
+              isLoading={isExporting}
+              leftIcon={<Download className="h-4 w-4" />}
+            >
+              Export CSV
+            </Button>
+          )}
         </div>
       </div>
 
@@ -134,6 +162,28 @@ export const LeadsToolbar = ({ total }: LeadsToolbarProps) => {
           </Chip>
         ))}
       </div>
+
+      {/* Assignee filter (admin / super-admin only) */}
+      {canFilterAssignee && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 pr-1 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+            <UserCog className="h-3.5 w-3.5" /> Assigned to
+          </span>
+          <Select
+            value={currentAssignee}
+            onChange={(e) => onPickAssignee(e.target.value)}
+            className="max-w-xs"
+          >
+            <option value="">Everyone</option>
+            <option value="unassigned">Unassigned (triage)</option>
+            {assignees.map((u) => (
+              <option key={u.id} value={u.id}>
+                {(u.name || u.email) + ' · ' + u.role.replace('_', ' ')}
+              </option>
+            ))}
+          </Select>
+        </div>
+      )}
     </div>
   );
 };

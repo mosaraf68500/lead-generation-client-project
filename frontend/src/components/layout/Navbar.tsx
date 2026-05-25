@@ -338,6 +338,18 @@ export const Navbar = () => {
                         <History className="h-4 w-4" /> History
                       </Link>
                       <Link
+                        href="/dashboard/interested"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-ink-700 transition hover:bg-surface-muted dark:text-ink-100 dark:hover:bg-ink-700"
+                      >
+                        <BookmarkPlus className="h-4 w-4" /> Interested
+                        {cartCount > 0 && (
+                          <span className="ml-auto rounded-full bg-brand-500 px-1.5 text-[10px] font-bold text-white">
+                            {cartCount}
+                          </span>
+                        )}
+                      </Link>
+                      <Link
                         href="/dashboard/wishlist"
                         onClick={() => setAccountOpen(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-ink-700 transition hover:bg-surface-muted dark:text-ink-100 dark:hover:bg-ink-700"
@@ -574,6 +586,20 @@ export const Navbar = () => {
                   className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700"
                 >
                   <History className="h-4 w-4" /> History
+                </Link>
+                <Link
+                  href="/dashboard/interested"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700"
+                >
+                  <BookmarkPlus className="h-4 w-4" /> Interested
+                </Link>
+                <Link
+                  href="/dashboard/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700"
+                >
+                  <Heart className="h-4 w-4" /> Wishlist
                 </Link>
                 <Link
                   href="/dashboard/support"

@@ -31,11 +31,19 @@ const getOne = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateRole = catchAsync(async (req: Request, res: Response) => {
+  // Block self-demotion / self-promotion — super-admins must hand off to
+  // another super-admin before changing their own role.
+  if (req.user && req.user.id === req.params.id) {
+    throw new AppError('You cannot change your own role', 400);
+  }
   const user = await UserService.setRole(req.params.id, req.body.role);
   return sendResponse(res, { message: 'Role updated', data: user });
 });
 
 const remove = catchAsync(async (req: Request, res: Response) => {
+  if (req.user && req.user.id === req.params.id) {
+    throw new AppError('You cannot delete your own account', 400);
+  }
   await UserService.remove(req.params.id);
   return sendResponse(res, { message: 'User deleted', data: null });
 });

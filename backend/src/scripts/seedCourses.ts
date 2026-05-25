@@ -35,7 +35,10 @@ import type { CourseLevel } from '../modules/course/course.interface';
 
 const THUMBNAILS: Record<string, string> = {
   Business: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80',
-  Design: 'https://images.unsplash.com/photo-1561070791-2526d30994b8?auto=format&fit=crop&w=1200&q=80',
+  // Previous URL (photo-1561070791-2526d30994b8) was removed by Unsplash and
+  // returned a 404 to next/image's optimiser, breaking course thumbnails for
+  // every Design course. Replacement is a verified-live Figma/UI workspace shot.
+  Design: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=1200&q=80',
   Engineering: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
   Marketing: 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&w=1200&q=80',
   'No-Code': 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1200&q=80',

@@ -9,9 +9,14 @@ import { USER_ROLES, type User, type UserRole } from '@/types';
 
 interface RoleAssignmentTableProps {
   initialUsers: User[];
+  /** Logged-in super-admin's id — disables the self-row so they can't demote themselves. */
+  currentUserId: string;
 }
 
-export const RoleAssignmentTable = ({ initialUsers }: RoleAssignmentTableProps) => {
+export const RoleAssignmentTable = ({
+  initialUsers,
+  currentUserId,
+}: RoleAssignmentTableProps) => {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const { push } = useToast();
@@ -49,7 +54,7 @@ export const RoleAssignmentTable = ({ initialUsers }: RoleAssignmentTableProps) 
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-card">
+    <div className="overflow-hidden rounded-3xl border border-ink-100 bg-white">
       <table className="min-w-full divide-y divide-ink-100 text-sm">
         <thead className="bg-surface-muted text-xs uppercase tracking-wider text-ink-500">
           <tr>
@@ -59,33 +64,55 @@ export const RoleAssignmentTable = ({ initialUsers }: RoleAssignmentTableProps) 
           </tr>
         </thead>
         <tbody className="divide-y divide-ink-100">
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td className="px-4 py-3">
-                <p className="font-semibold text-ink-900">{user.name || '(no name)'}</p>
-                <p className="text-xs text-ink-500">{user.email}</p>
-              </td>
-              <td className="px-4 py-3">
-                <Badge tone="brand" className="capitalize">
-                  {user.role.replace('_', ' ')}
-                </Badge>
-              </td>
-              <td className="px-4 py-3">
-                <Select
-                  value={user.role}
-                  disabled={pendingId === user.id}
-                  onChange={(event) => updateRole(user, event.target.value as UserRole)}
-                  className="max-w-xs capitalize"
-                >
-                  {USER_ROLES.map((role) => (
-                    <option key={role} value={role} className="capitalize">
-                      {role.replace('_', ' ')}
-                    </option>
-                  ))}
-                </Select>
-              </td>
-            </tr>
-          ))}
+          {users.map((user) => {
+            const isSelf = user.id === currentUserId;
+            return (
+              <tr key={user.id} className={isSelf ? 'bg-amber-50/40' : undefined}>
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-ink-900">
+                    {user.name || '(no name)'}
+                    {isSelf && (
+                      <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                        you
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-ink-500">{user.email}</p>
+                </td>
+                <td className="px-4 py-3">
+                  <Badge tone="brand" className="capitalize">
+                    {user.role.replace('_', ' ')}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <Select
+                    value={user.role}
+                    disabled={pendingId === user.id || isSelf}
+                    onChange={(event) =>
+                      updateRole(user, event.target.value as UserRole)
+                    }
+                    className="max-w-xs capitalize"
+                    aria-label={
+                      isSelf
+                        ? 'Cannot change your own role'
+                        : `Assign role to ${user.name || user.email}`
+                    }
+                  >
+                    {USER_ROLES.map((role) => (
+                      <option key={role} value={role} className="capitalize">
+                        {role.replace('_', ' ')}
+                      </option>
+                    ))}
+                  </Select>
+                  {isSelf && (
+                    <p className="mt-1 text-[10px] text-amber-700">
+                      You can&apos;t change your own role. Ask another super-admin.
+                    </p>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

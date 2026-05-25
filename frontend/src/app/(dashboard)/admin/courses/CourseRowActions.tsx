@@ -16,7 +16,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Trash2, ExternalLink, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2, ExternalLink, Loader2, Pencil } from 'lucide-react';
 import { api, ApiError } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { cn } from '@/utils';
@@ -97,6 +97,15 @@ export const CourseRowActions = ({
         aria-label="View on site"
       >
         <ExternalLink className="h-4 w-4" />
+      </Link>
+
+      <Link
+        href={`/admin/courses/${slug}/edit`}
+        className={iconBtn}
+        title="Edit course"
+        aria-label="Edit course"
+      >
+        <Pencil className="h-4 w-4" />
       </Link>
 
       <button

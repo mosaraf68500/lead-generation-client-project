@@ -61,5 +61,7 @@ const leadSchema = new Schema<ILeadDocument>(
 
 leadSchema.index({ status: 1, createdAt: -1 });
 leadSchema.index({ email: 1, createdAt: -1 });
+// Powers the staff "my leads" view + admin filter-by-assignee.
+leadSchema.index({ assignedTo: 1, createdAt: -1 });
 
 export const LeadModel = model<ILeadDocument>('Lead', leadSchema);

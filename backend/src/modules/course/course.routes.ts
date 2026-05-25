@@ -37,10 +37,14 @@ router.get(
   CourseController.getBySlug,
 );
 
+// Course CRUD is strictly admin / super-admin per the RBAC matrix.
+// Staff are restricted to lead operations — they cannot create, edit, publish
+// or delete courses. The `requireRole` middleware automatically elevates
+// super_admin, so listing just `admin` is sufficient.
 router.post(
   '/',
   requireAuth,
-  requireRole('staff', 'admin'),
+  requireRole('admin'),
   upload.single('thumbnail'),
   validate({ body: courseValidation.create }),
   CourseController.create,
@@ -49,7 +53,7 @@ router.post(
 router.patch(
   '/:id',
   requireAuth,
-  requireRole('staff', 'admin'),
+  requireRole('admin'),
   upload.single('thumbnail'),
   validate({ params: courseValidation.idParam, body: courseValidation.update }),
   CourseController.update,
@@ -58,7 +62,7 @@ router.patch(
 router.post(
   '/:id/publish',
   requireAuth,
-  requireRole('staff', 'admin'),
+  requireRole('admin'),
   validate({ params: courseValidation.idParam }),
   CourseController.publish,
 );

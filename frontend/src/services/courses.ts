@@ -51,6 +51,31 @@ export const fetchCourseBySlug = async (slug: string): Promise<Course | null> =>
   }
 };
 
+// --- Mutations -----------------------------------------------------------
+
+/**
+ * Create a new course. `formData` MUST include a `thumbnail` File entry
+ * because the backend rejects creation without one. Returns the created
+ * course on success.
+ */
+export const createCourse = async (formData: FormData): Promise<Course> => {
+  const { data } = await api.post<Course>('/courses', formData);
+  return data;
+};
+
+/**
+ * Update an existing course. `formData` may include a fresh `thumbnail`
+ * File entry (Cloudinary will replace the old image) — omit it to keep the
+ * existing thumbnail unchanged.
+ */
+export const updateCourse = async (
+  id: string,
+  formData: FormData,
+): Promise<Course> => {
+  const { data } = await api.patch<Course>(`/courses/${id}`, formData);
+  return data;
+};
+
 export interface CourseAnalytics {
   total: number;
   published: number;

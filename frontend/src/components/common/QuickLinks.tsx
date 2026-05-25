@@ -2,15 +2,61 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, ChevronRight } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import {
+  LogOut,
+  ChevronRight,
+  History,
+  BookmarkPlus,
+  Heart,
+  LifeBuoy,
+  Inbox,
+  GraduationCap,
+  UserCircle,
+  ShieldCheck,
+  Users,
+  Settings,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/utils';
+
+/**
+ * Registered icon keys QuickLinks can render. We map string keys to actual
+ * Lucide components inside this client module — that way the parent (which
+ * can be a Server Component) only ships plain strings across the boundary,
+ * sidestepping Next.js's "functions cannot be passed to Client Components"
+ * serialisation error.
+ */
+export type QuickLinkIconName =
+  | 'history'
+  | 'interested'
+  | 'wishlist'
+  | 'support'
+  | 'inbox'
+  | 'courses'
+  | 'profile'
+  | 'admin'
+  | 'users'
+  | 'settings';
+
+const ICONS: Record<QuickLinkIconName, LucideIcon> = {
+  history: History,
+  interested: BookmarkPlus,
+  wishlist: Heart,
+  support: LifeBuoy,
+  inbox: Inbox,
+  courses: GraduationCap,
+  profile: UserCircle,
+  admin: ShieldCheck,
+  users: Users,
+  settings: Settings,
+};
 
 export interface QuickLinkItem {
   label: string;
   href: string;
-  icon?: LucideIcon;
+  /** String key looked up against the local icon registry. */
+  iconName?: QuickLinkIconName;
 }
 
 interface QuickLinksProps {
@@ -44,7 +90,7 @@ export const QuickLinks = ({ title = 'Quick links', items, showLogout = true }: 
         </p>
         <nav className="space-y-1">
           {items.map((item) => {
-            const Icon = item.icon;
+            const Icon = item.iconName ? ICONS[item.iconName] : undefined;
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (

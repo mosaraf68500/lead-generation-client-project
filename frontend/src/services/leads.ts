@@ -1,11 +1,13 @@
 import { api, ApiError } from '@/services/api';
-import type { Lead, LeadStatus, PaginatedMeta } from '@/types';
+import type { Lead, LeadAssignee, LeadStatus, PaginatedMeta, StaffPerformance } from '@/types';
 
 export interface LeadsQuery {
   search?: string;
   status?: string;
   source?: string;
   interestedCourse?: string;
+  /** Admin-only: filter by which staff/admin a lead is assigned to. */
+  assignedTo?: string;
   page?: number;
   limit?: number;
 }
@@ -98,6 +100,18 @@ export const addLeadNote = async (id: string, message: string): Promise<Lead> =>
   return data;
 };
 
+/**
+ * Assign (or unassign with `null`) a lead to a staff/admin user.
+ * Admin / super-admin only — staff get a 403 from the backend.
+ */
+export const assignLead = async (
+  id: string,
+  assignedTo: string | null,
+): Promise<Lead> => {
+  const { data } = await api.patch<Lead>(`/leads/${id}/assign`, { assignedTo });
+  return data;
+};
+
 export const deleteLead = async (id: string): Promise<void> => {
   await api.delete(`/leads/${id}`);
 };
@@ -149,5 +163,56 @@ export const fetchLeadAnalytics = async (): Promise<LeadAnalytics | null> => {
   } catch (err) {
     if (err instanceof ApiError) return null;
     throw err;
+  }
+};
+
+/**
+ * Fetches the caller's own assigned-lead KPIs.
+ * Powers the staff dashboard "performance" strip.
+ */
+export const fetchMyPerformance = async (): Promise<StaffPerformance | null> => {
+  try {
+    const { data } = await api.get<StaffPerformance>('/leads/my-performance');
+    return data;
+  } catch (err) {
+    if (err instanceof ApiError) return null;
+    throw err;
+  }
+};
+
+// --- Assignee helpers ----------------------------------------------------
+
+/**
+ * Returns the list of users who CAN have leads assigned to them
+ * (staff + admins + super-admins). Used by the assignment dropdown on the
+ * Lead CRM detail drawer.
+ */
+export const fetchAssignableUsers = async (): Promise<LeadAssignee[]> => {
+  try {
+    const roles: Array<LeadAssignee['role']> = ['staff', 'admin', 'super_admin'];
+    const lists = await Promise.all(
+      roles.map(async (role) => {
+        try {
+          const { data } = await api.get<LeadAssignee[]>(
+            `/users?role=${role}&limit=100`,
+            { tags: ['users'] },
+          );
+          return data;
+        } catch {
+          return [] as LeadAssignee[];
+        }
+      }),
+    );
+    const flat = lists.flat();
+    // Some users might come back from multiple role queries (shouldn't, but
+    // de-dupe defensively); also normalise id casing.
+    const seen = new Set<string>();
+    return flat.filter((u) => {
+      if (!u?.id || seen.has(u.id)) return false;
+      seen.add(u.id);
+      return true;
+    });
+  } catch {
+    return [];
   }
 };

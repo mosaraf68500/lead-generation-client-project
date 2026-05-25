@@ -8,32 +8,31 @@
  *        Left  — `ProfileForm` (avatar header + form fields + Save).
  *        Right — `QuickLinks` panel + outlined-red Log out button.
  */
-import { History, BookmarkPlus, Heart, LifeBuoy, Inbox } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PageHero } from '@/components/common/PageHero';
-import { QuickLinks } from '@/components/common/QuickLinks';
+import { QuickLinks, type QuickLinkItem } from '@/components/common/QuickLinks';
 import { ProfileForm } from '@/components/common/ProfileForm';
 import { requireSessionRole } from '@/services/session';
-import type { QuickLinkItem } from '@/components/common/QuickLinks';
 
 export const dynamic = 'force-dynamic';
 
 const ProfilePage = async () => {
   const user = await requireSessionRole();
 
-  // Personal area Quick-Links list. We swap "Order history" → "Application
-  // history" because this is a lead-generation platform with no orders.
+  // NOTE: we pass icons as STRING keys (not the component itself) because
+  // `QuickLinks` is a Client Component — Next.js cannot serialise Lucide
+  // icon function components across the server/client boundary.
   const baseLinks: QuickLinkItem[] = [
-    { label: 'Application history', href: '/dashboard/history', icon: History },
-    { label: 'Interested courses', href: '/dashboard/interested', icon: BookmarkPlus },
-    { label: 'Wishlist', href: '/dashboard/wishlist', icon: Heart },
-    { label: 'Support center', href: '/dashboard/support', icon: LifeBuoy },
+    { label: 'Application history', href: '/dashboard/history', iconName: 'history' },
+    { label: 'Interested courses', href: '/dashboard/interested', iconName: 'interested' },
+    { label: 'Wishlist', href: '/dashboard/wishlist', iconName: 'wishlist' },
+    { label: 'Support center', href: '/dashboard/support', iconName: 'support' },
   ];
 
   // Privileged roles also see a shortcut to the inbox.
   const links: QuickLinkItem[] =
     user.role === 'staff' || user.role === 'admin' || user.role === 'super_admin'
-      ? [{ label: 'Lead inbox', href: '/admin/leads', icon: Inbox }, ...baseLinks]
+      ? [{ label: 'Lead inbox', href: '/admin/leads', iconName: 'inbox' }, ...baseLinks]
       : baseLinks;
 
   return (

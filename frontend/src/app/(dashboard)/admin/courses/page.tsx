@@ -13,8 +13,10 @@ import { CourseRowActions } from './CourseRowActions';
 
 export const dynamic = 'force-dynamic';
 
+// Course management is restricted to admin+ per the RBAC matrix. Staff have
+// no course CRUD access — they're redirected if they land here.
 const CoursesPage = async () => {
-  await requireSessionRole('staff', 'admin');
+  await requireSessionRole('admin');
   const { courses, meta } = await fetchCourses({ limit: 100 });
 
   const columns: DataTableColumn<Course>[] = [
@@ -104,7 +106,7 @@ const CoursesPage = async () => {
       title="Course catalog"
       subtitle={`${meta?.total ?? courses.length} courses in your catalog.`}
       actions={
-        <Link href="/course">
+        <Link href="/admin/courses/new">
           <Button leftIcon={<Plus className="h-4 w-4" />}>New course</Button>
         </Link>
       }

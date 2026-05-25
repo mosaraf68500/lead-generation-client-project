@@ -12,19 +12,47 @@ const moduleSchema = z.object({
   lessons: z.array(lessonSchema).default([]),
 });
 
+/**
+ * The course CRUD routes accept multipart/form-data because of the thumbnail
+ * upload. Multer puts non-file fields onto `req.body` as raw strings (or
+ * arrays of strings when a key is repeated), so a few preprocessors below
+ * adapt those into the shapes Zod expects.
+ */
+
+/** "single string" → [string]; nullish/empty → []; array passes through. */
+const toStringArray = (val: unknown): string[] => {
+  if (Array.isArray(val)) return val.map((v) => String(v));
+  if (val === undefined || val === null || val === '') return [];
+  return [String(val)];
+};
+
+/** "true"/"1"/true → true; "false"/"0"/false/empty/undefined → false. */
+const toBoolean = (val: unknown): boolean => {
+  if (typeof val === 'boolean') return val;
+  if (val === 'true' || val === '1' || val === 1) return true;
+  return false;
+};
+
+/** Treat empty strings as undefined so `.optional()` works for form fields. */
+const stripEmpty = (val: unknown): unknown =>
+  typeof val === 'string' && val.trim() === '' ? undefined : val;
+
 const baseCourse = z.object({
   title: z.string().trim().min(3).max(160),
   shortDescription: z.string().trim().min(10).max(280),
   description: z.string().trim().min(20),
   price: z.coerce.number().min(0),
-  discountPrice: z.coerce.number().min(0).optional(),
+  discountPrice: z.preprocess(stripEmpty, z.coerce.number().min(0).optional()),
   category: z.string().trim().min(2).max(80),
   level: z.enum(COURSE_LEVELS),
   durationHours: z.coerce.number().min(0),
   instructor: z.string().min(8),
-  modules: z.array(moduleSchema).default([]),
-  tags: z.array(z.string().trim()).default([]),
-  isPublished: z.coerce.boolean().optional(),
+  modules: z.preprocess(
+    (v) => (v === undefined || v === '' ? [] : v),
+    z.array(moduleSchema).default([]),
+  ),
+  tags: z.preprocess(toStringArray, z.array(z.string().trim()).default([])),
+  isPublished: z.preprocess(toBoolean, z.boolean()).optional(),
 });
 
 export const courseValidation = {

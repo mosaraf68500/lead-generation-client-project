@@ -3,7 +3,11 @@ import { Inbox, Users, TrendingUp, AlertOctagon } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/common/StatCard';
 import { requireSessionRole } from '@/services/session';
-import { fetchLeads, fetchLeadAnalytics } from '@/services/leads';
+import {
+  fetchLeads,
+  fetchLeadAnalytics,
+  fetchAssignableUsers,
+} from '@/services/leads';
 import { LeadsToolbar } from './LeadsToolbar';
 import { LeadsCrmTable } from './LeadsCrmTable';
 
@@ -17,40 +21,64 @@ const asString = (v: string | string[] | undefined): string | undefined =>
   Array.isArray(v) ? v[0] : v;
 
 /**
- * Mini-CRM page (Admin + Staff).
- * The user spec: no checkout / no payment gateway. Everyone landing on the
- * site goes through the LeadCaptureModal which writes to the `leads`
- * collection — this page is where staff actually work the funnel.
+ * Mini-CRM page — role-aware.
  *
- *   - Status chips (with counts) filter the table
- *   - Inline status changer per row + detail drawer for full info & notes
- *   - CSV export respects the current filters
- *   - KPI strip shows how the funnel is performing right now
+ *   Staff       → renders as "My Leads" panel. Backend auto-scopes to leads
+ *                 where `assignedTo == staff.id`. No export / assign / delete.
+ *   Admin       → full Lead CRM. Assign, delete, export, filter by assignee.
+ *   Super-admin → same affordances as admin.
  */
 const LeadsPage = async ({ searchParams }: PageProps) => {
-  await requireSessionRole('staff', 'admin');
+  const user = await requireSessionRole('staff', 'admin');
+  const isStaff = user.role === 'staff';
+  const isPrivileged = user.role === 'admin' || user.role === 'super_admin';
 
   const status = asString(searchParams.status);
   const search = asString(searchParams.search);
+  const rawAssignee = asString(searchParams.assignedTo);
+  // "unassigned" is a UI affordance; the backend understands an empty value
+  // as "no filter", so we map "unassigned" → don't send anything for staff
+  // and special-case it in a follow-up filter on the page itself.
+  const assignedToFilter = isPrivileged && rawAssignee && rawAssignee !== 'unassigned'
+    ? rawAssignee
+    : undefined;
   const page = Number(asString(searchParams.page) ?? '1') || 1;
 
-  const [{ leads, meta }, analytics] = await Promise.all([
-    fetchLeads({ status, search, page, limit: 20 }),
+  // Admin/super-admin: fetch the staff pool concurrently. Staff: skip the
+  // (potentially unauthorised) users list entirely.
+  const [{ leads, meta }, analytics, assignees] = await Promise.all([
+    fetchLeads({
+      status,
+      search,
+      assignedTo: assignedToFilter,
+      page,
+      limit: 20,
+    }),
     fetchLeadAnalytics(),
+    isPrivileged ? fetchAssignableUsers() : Promise.resolve([]),
   ]);
 
-  const total = analytics?.total ?? meta?.total ?? leads.length;
+  // Client-side "unassigned" filter for the admin/super-admin who selected it
+  // from the toolbar. We can't express `{ assignedTo: null }` cleanly via
+  // querystring, so we filter post-fetch for that single case.
+  const visibleLeads =
+    isPrivileged && rawAssignee === 'unassigned'
+      ? leads.filter((l) => !l.assignedTo)
+      : leads;
+
+  const total = analytics?.total ?? meta?.total ?? visibleLeads.length;
+  const title = isStaff ? 'My Leads' : 'Lead CRM';
+  const subtitle = isStaff
+    ? 'Only the leads assigned to you appear here. Call, qualify, and convert.'
+    : 'Work the funnel — call, qualify, enrol. Assign leads to staff and export anytime.';
 
   return (
-    <DashboardLayout
-      title="Lead CRM"
-      subtitle="Work the funnel — call, qualify, enrol. Every interaction is one row here."
-    >
-      {/* KPI strip */}
+    <DashboardLayout title={title} subtitle={subtitle}>
+      {/* KPI strip — same metric names for staff, but scoped to their data */}
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           icon={Inbox}
-          label="Total leads"
+          label={isStaff ? 'My leads' : 'Total leads'}
           value={analytics?.total ?? 0}
           hint={`${analytics?.newCount ?? 0} new`}
           tone="brand"
@@ -64,7 +92,7 @@ const LeadsPage = async ({ searchParams }: PageProps) => {
         />
         <StatCard
           icon={TrendingUp}
-          label="Enrolled"
+          label={isStaff ? 'My conversions' : 'Enrolled'}
           value={analytics?.enrolledCount ?? 0}
           hint={`${analytics?.conversionRate ?? 0}% conversion`}
           tone="accent"
@@ -79,19 +107,28 @@ const LeadsPage = async ({ searchParams }: PageProps) => {
 
       {/* Toolbar */}
       <div className="mt-6">
-        <LeadsToolbar total={total} />
+        <LeadsToolbar
+          total={total}
+          canExport={isPrivileged}
+          canFilterAssignee={isPrivileged}
+          assignees={assignees}
+        />
       </div>
 
       {/* Table */}
       <div className="mt-4">
-        {leads.length === 0 ? (
+        {visibleLeads.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-ink-100 bg-white px-6 py-16 text-center dark:border-ink-700 dark:bg-ink-900">
             <Inbox className="mx-auto h-10 w-10 text-ink-300" />
             <h3 className="mt-3 text-base font-semibold text-ink-900 dark:text-ink-100">
-              No leads match your filters
+              {isStaff
+                ? 'Nothing in your queue yet'
+                : 'No leads match your filters'}
             </h3>
             <p className="mt-1 text-sm text-ink-500">
-              Try resetting the filters or come back once new leads have been captured.
+              {isStaff
+                ? 'When an admin assigns you a lead it will show up here.'
+                : 'Try resetting the filters or come back once new leads have been captured.'}
             </p>
             <div className="mt-4">
               <Link
@@ -103,7 +140,12 @@ const LeadsPage = async ({ searchParams }: PageProps) => {
             </div>
           </div>
         ) : (
-          <LeadsCrmTable leads={leads} />
+          <LeadsCrmTable
+            leads={visibleLeads}
+            canAssign={isPrivileged}
+            canDelete={isPrivileged}
+            assignees={assignees}
+          />
         )}
       </div>
 
@@ -114,6 +156,7 @@ const LeadsPage = async ({ searchParams }: PageProps) => {
             const params = new URLSearchParams();
             if (status) params.set('status', status);
             if (search) params.set('search', search);
+            if (rawAssignee && isPrivileged) params.set('assignedTo', rawAssignee);
             if (p > 1) params.set('page', String(p));
             const qs = params.toString();
             const isActive = p === meta.page;

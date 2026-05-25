@@ -10,6 +10,7 @@
     "start": "node dist/server.js",
     "seed": "ts-node-dev --transpile-only --no-notify --exit-child src/scripts/seed.ts",
     "seed:courses": "ts-node-dev --transpile-only --no-notify --exit-child src/scripts/seedCourses.ts",
+    "seed:categories": "ts-node-dev --transpile-only --no-notify --exit-child src/scripts/seedCategories.ts",
     "migrate:lead-statuses": "ts-node-dev --transpile-only --no-notify --exit-child src/scripts/migrateLeadStatuses.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.{ts,json}\""

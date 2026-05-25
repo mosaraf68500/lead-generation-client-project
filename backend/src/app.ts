@@ -19,6 +19,7 @@ import { auth } from './config/auth';
 import { authRouter } from './modules/auth/auth.routes';
 import { userRouter } from './modules/user/user.routes';
 import { courseRouter } from './modules/course/course.routes';
+import { categoryRouter } from './modules/category/category.routes';
 import { leadRouter } from './modules/lead/lead.routes';
 import { notFoundHandler } from './middleware/notFound.middleware';
 import { errorHandler } from './middleware/error.middleware';
@@ -45,7 +46,7 @@ app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
  */
 app.all('/api/auth/*', toNodeHandler(auth));
 
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 
@@ -58,6 +59,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth-profile', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/courses', courseRouter);
+app.use('/api/categories', categoryRouter);
 app.use('/api/leads', leadRouter);
 
 app.use(notFoundHandler);

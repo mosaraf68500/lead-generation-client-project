@@ -67,3 +67,66 @@
     color: transparent;
   }
 }
+
+/* ---------------------------------------------------------------------
+ * Print stylesheet.
+ *
+ * The admin overview and analytics page expose a "Print" button that
+ * triggers `window.print()`. To produce a clean, paper-friendly result:
+ *   - hide the chrome (sidebar, header, navbar, footer, action buttons)
+ *   - flatten card borders + remove rounding so the printable view reads
+ *     as a structured table
+ *   - force black-on-white text + reveal the dedicated `.print-only`
+ *     block (the table summary that's hidden on screen)
+ * ------------------------------------------------------------------ */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  /* Hide chrome + interactive bits. */
+  aside,
+  header,
+  nav,
+  footer,
+  .no-print,
+  button {
+    display: none !important;
+  }
+  /* Keep <button>s used as labels visible if explicitly opted in. */
+  .print-show {
+    display: revert !important;
+  }
+  /* Flatten cards. */
+  .rounded-2xl,
+  .rounded-3xl,
+  .rounded-xl,
+  .rounded-md {
+    border-radius: 0 !important;
+  }
+  .border,
+  .border-ink-100,
+  .border-ink-700 {
+    border-color: #d1d5db !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  /* Reveal the dedicated print summary. */
+  .print-only {
+    display: block !important;
+  }
+  /* Avoid orphan rows on multi-page reports. */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+
+/* Hidden on screen, revealed on print. */
+.print-only {
+  display: none;
+}

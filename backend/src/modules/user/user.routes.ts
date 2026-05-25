@@ -42,10 +42,12 @@ router.patch(
   UserController.updateRole,
 );
 
+// Only super-admins can terminate accounts. Admins manage business operations
+// but cannot delete other admins or super-admin accounts per the RBAC matrix.
 router.delete(
   '/:id',
   requireAuth,
-  requireRole('admin'),
+  requireRole('super_admin'),
   validate({ params: userValidation.idParam }),
   UserController.remove,
 );

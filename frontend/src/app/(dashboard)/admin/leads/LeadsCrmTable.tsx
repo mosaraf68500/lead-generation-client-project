@@ -1,23 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, Mail, MessageCircle, Phone } from 'lucide-react';
-import type { Lead } from '@/types';
+import { Eye, Mail, MessageCircle, Phone, UserCheck } from 'lucide-react';
+import type { Lead, LeadAssignee } from '@/types';
 import { formatDate } from '@/utils';
 import { LeadStatusSelect } from './LeadStatusSelect';
 import { LeadDetailDrawer } from './LeadDetailDrawer';
 
 interface LeadsCrmTableProps {
   leads: Lead[];
+  /** True for admin / super-admin: surface assignee column + assign actions. */
+  canAssign?: boolean;
+  /** True for admin / super-admin: enable drawer delete button. */
+  canDelete?: boolean;
+  /** Pool of assignable users — required when `canAssign` is true. */
+  assignees?: LeadAssignee[];
 }
 
 /**
- * Mini-CRM table for the admin/staff dashboard. Each row exposes:
+ * Mini-CRM table for the admin / staff dashboard. Each row exposes:
  *   - Quick contact actions (call / WhatsApp / email)
  *   - Inline status changer
  *   - "Open" button that pops a detail drawer with notes + full info
+ *
+ * Admins additionally see an "Assigned to" column and can reassign / delete
+ * from the detail drawer. Staff see the row WITHOUT those affordances since
+ * the backend already prevents them from acting on someone else's lead.
  */
-export const LeadsCrmTable = ({ leads }: LeadsCrmTableProps) => {
+export const LeadsCrmTable = ({
+  leads,
+  canAssign = false,
+  canDelete = false,
+  assignees = [],
+}: LeadsCrmTableProps) => {
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
   return (
@@ -30,6 +45,7 @@ export const LeadsCrmTable = ({ leads }: LeadsCrmTableProps) => {
                 <th className="px-4 py-3">Lead</th>
                 <th className="px-4 py-3">Course</th>
                 <th className="px-4 py-3">Channel</th>
+                {canAssign && <th className="px-4 py-3">Assigned to</th>}
                 <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Captured</th>
@@ -43,6 +59,10 @@ export const LeadsCrmTable = ({ leads }: LeadsCrmTableProps) => {
                     ? lead.interestedCourse.title
                     : null;
                 const waNumber = (lead.whatsapp ?? lead.phone).replace(/[^0-9]/g, '');
+                const assignee =
+                  lead.assignedTo && typeof lead.assignedTo === 'object'
+                    ? (lead.assignedTo as LeadAssignee)
+                    : null;
                 return (
                   <tr
                     key={lead.id}
@@ -99,6 +119,25 @@ export const LeadsCrmTable = ({ leads }: LeadsCrmTableProps) => {
                         </a>
                       </div>
                     </td>
+                    {canAssign && (
+                      <td className="px-4 py-3 align-top">
+                        {assignee ? (
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <UserCheck className="h-3.5 w-3.5 text-brand-600" />
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-ink-700 dark:text-ink-100">
+                                {assignee.name || assignee.email}
+                              </p>
+                              <p className="truncate text-[10px] capitalize text-ink-500">
+                                {assignee.role.replace('_', ' ')}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] italic text-ink-400">Unassigned</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-4 py-3 align-top text-xs text-ink-500">{lead.source}</td>
                     <td className="px-4 py-3 align-top">
                       <LeadStatusSelect leadId={lead.id} status={lead.status} />
@@ -128,7 +167,13 @@ export const LeadsCrmTable = ({ leads }: LeadsCrmTableProps) => {
         </div>
       </div>
 
-      <LeadDetailDrawer lead={activeLead} onClose={() => setActiveLead(null)} />
+      <LeadDetailDrawer
+        lead={activeLead}
+        onClose={() => setActiveLead(null)}
+        canAssign={canAssign}
+        canDelete={canDelete}
+        assignees={assignees}
+      />
     </>
   );
 };

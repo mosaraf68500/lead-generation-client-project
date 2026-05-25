@@ -11,8 +11,16 @@ import { cn } from '@/utils';
 interface LeadStatusSelectProps {
   leadId: string;
   status: LeadStatus;
-  /** Optional override that re-fetches the parent list after mutation. */
-  onChanged?: () => void;
+  /**
+   * Optional override that re-fetches / mutates parent state after a
+   * successful PATCH. Receives the new status so parents can update
+   * their own copy of the lead without a full refetch (used by the
+   * staff "My Leads" page for optimistic UI).
+   *
+   * When omitted the component falls back to `router.refresh()`, which
+   * is what the admin server-component table relies on.
+   */
+  onChanged?: (next: LeadStatus) => void;
 }
 
 const SELECT_TONE: Record<LeadStatus, string> = {
@@ -46,7 +54,7 @@ export const LeadStatusSelect = ({ leadId, status, onChanged }: LeadStatusSelect
           title: 'Status updated',
           description: `${LEAD_STATUS_META[next].label}`,
         });
-        if (onChanged) onChanged();
+        if (onChanged) onChanged(next);
         else router.refresh();
       } catch (err) {
         setOptimistic(prev);

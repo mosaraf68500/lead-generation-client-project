@@ -13,6 +13,9 @@ export interface PaginationMeta {
   limit: number;
   total: number;
   totalPages: number;
+  // Index signature so a `PaginationMeta` value can flow into `sendResponse`'s
+  // `ResponseMeta` slot (which already declares `[key: string]: unknown`).
+  [key: string]: unknown;
 }
 
 export interface BuildResult<T> {

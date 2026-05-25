@@ -88,6 +88,19 @@ export interface Course {
   updatedAt: string;
 }
 
+/**
+ * Minimal shape returned by the backend when `assignedTo` is populated.
+ * Lead responses include this when the caller is admin/super-admin so the
+ * CRM table can show who owns each row.
+ */
+export interface LeadAssignee {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -103,7 +116,8 @@ export interface Lead {
   message?: string;
   status: LeadStatus;
   notes?: LeadNote[];
-  assignedTo?: string;
+  /** Either an id string (unpopulated) or the populated user shape. */
+  assignedTo?: LeadAssignee | string | null;
   utm?: {
     source?: string;
     medium?: string;
@@ -115,9 +129,36 @@ export interface Lead {
   updatedAt: string;
 }
 
+/** Personal performance KPIs for a single staff member (`/leads/my-performance`). */
+export interface StaffPerformance {
+  assignedTotal: number;
+  assignedToday: number;
+  assignedThisWeek: number;
+  byStatus: Record<LeadStatus, number>;
+  conversionRate: number;
+}
+
 export interface PaginatedMeta {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
+}
+
+/**
+ * Course taxonomy entry. The admin "Categories" page surfaces these rows
+ * with their derived course counts.
+ */
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  iconKey?: string;
+  sortOrder: number;
+  isActive: boolean;
+  courseCount?: number;
+  publishedCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }

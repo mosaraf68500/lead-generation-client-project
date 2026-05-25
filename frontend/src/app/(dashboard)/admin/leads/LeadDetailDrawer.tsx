@@ -14,29 +14,44 @@ import {
   StickyNote,
   Send,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
-import type { Lead } from '@/types';
+import type { Lead, LeadAssignee } from '@/types';
 import { LEAD_STATUS_META } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 import { LeadStatusSelect } from './LeadStatusSelect';
+import { LeadAssignSelect } from './LeadAssignSelect';
 import { useToast } from '@/context/ToastContext';
-import { addLeadNote } from '@/services/leads';
+import { addLeadNote, deleteLead } from '@/services/leads';
 import { ApiError } from '@/services/api';
 import { formatDate } from '@/utils';
 
 interface LeadDetailDrawerProps {
   lead: Lead | null;
   onClose: () => void;
+  /** Admin / super-admin only — exposes the assignee picker. */
+  canAssign?: boolean;
+  /** Admin / super-admin only — exposes the delete button. */
+  canDelete?: boolean;
+  /** Required when `canAssign` is true — list of users to choose from. */
+  assignees?: LeadAssignee[];
 }
 
 /** Right-side slide-out drawer that shows everything about a single lead. */
-export const LeadDetailDrawer = ({ lead, onClose }: LeadDetailDrawerProps) => {
+export const LeadDetailDrawer = ({
+  lead,
+  onClose,
+  canAssign = false,
+  canDelete = false,
+  assignees = [],
+}: LeadDetailDrawerProps) => {
   const router = useRouter();
   const { push } = useToast();
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Reset the local note state when the drawer swaps leads.
   useEffect(() => {
@@ -72,6 +87,23 @@ export const LeadDetailDrawer = ({ lead, onClose }: LeadDetailDrawerProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!lead) return;
+    if (!window.confirm(`Delete lead "${lead.name}"? This cannot be undone.`)) return;
+    setIsDeleting(true);
+    try {
+      await deleteLead(lead.id);
+      push({ variant: 'success', title: 'Lead deleted' });
+      onClose();
+      router.refresh();
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Could not delete lead';
+      push({ variant: 'error', title: 'Delete failed', description: msg });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const courseTitle =
     lead.interestedCourse && typeof lead.interestedCourse === 'object'
       ? lead.interestedCourse.title
@@ -80,6 +112,16 @@ export const LeadDetailDrawer = ({ lead, onClose }: LeadDetailDrawerProps) => {
     lead.interestedCourse && typeof lead.interestedCourse === 'object'
       ? lead.interestedCourse.slug
       : null;
+
+  // `assignedTo` can be `null`, a populated user, or an id string.
+  const currentAssignee: LeadAssignee | null =
+    lead.assignedTo && typeof lead.assignedTo === 'object'
+      ? (lead.assignedTo as LeadAssignee)
+      : null;
+  const currentAssigneeId: string | null =
+    typeof lead.assignedTo === 'string'
+      ? lead.assignedTo
+      : currentAssignee?.id ?? null;
 
   return (
     <div className="fixed inset-0 z-40">
@@ -110,16 +152,35 @@ export const LeadDetailDrawer = ({ lead, onClose }: LeadDetailDrawerProps) => {
             </button>
           </div>
 
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <LeadStatusSelect leadId={lead.id} status={lead.status} />
             <Badge tone="neutral" className="bg-transparent">
               <Tag className="mr-1 h-3 w-3" /> {lead.source}
             </Badge>
+            {!canAssign && currentAssignee && (
+              <Badge tone="brand" className="capitalize">
+                Owner: {currentAssignee.name || currentAssignee.email}
+              </Badge>
+            )}
           </div>
         </header>
 
         {/* Body */}
         <div className="flex-1 px-5 py-5 space-y-5">
+          {/* Assignment picker — admin / super-admin only */}
+          {canAssign && (
+            <section className="rounded-2xl border border-ink-100 bg-surface-muted/40 p-4 dark:border-ink-700">
+              <LeadAssignSelect
+                leadId={lead.id}
+                currentAssigneeId={currentAssigneeId}
+                assignees={assignees}
+              />
+              <p className="mt-2 text-[11px] text-ink-500">
+                Assignees only see leads in their own &ldquo;My Leads&rdquo; panel.
+              </p>
+            </section>
+          )}
+
           {/* Contact tiles */}
           <section className="grid grid-cols-1 gap-2">
             <ContactRow
@@ -243,6 +304,31 @@ export const LeadDetailDrawer = ({ lead, onClose }: LeadDetailDrawerProps) => {
             {' · '}
             Updated {formatDate(lead.updatedAt)}
           </div>
+
+          {/* Danger zone — admin / super-admin only */}
+          {canDelete && (
+            <div className="rounded-2xl border border-red-200 bg-red-50/40 p-4 dark:border-red-900/40 dark:bg-red-900/10">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-300">
+                Danger zone
+              </p>
+              <p className="mt-1 text-xs text-ink-600 dark:text-ink-300">
+                Permanently remove this lead and every note attached to it.
+              </p>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDelete}
+                  isLoading={isDeleting}
+                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                  className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50"
+                >
+                  Delete lead
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
     </div>

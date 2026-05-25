@@ -33,11 +33,20 @@ export const leadValidation = {
     message: z.string().trim().min(1).max(2048),
   }),
 
+  /**
+   * Assign a lead to a staff/admin user — or unassign by sending `null`.
+   * Only admins + super-admins are allowed at the route level.
+   */
+  assign: z.object({
+    assignedTo: z.string().min(8).nullable(),
+  }),
+
   listQuery: z.object({
     search: z.string().optional(),
     status: z.enum(LEAD_STATUSES).optional(),
     source: z.string().optional(),
     interestedCourse: z.string().optional(),
+    assignedTo: z.string().optional(),
     sort: z.string().optional(),
     page: z.coerce.number().int().positive().optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
@@ -47,6 +56,7 @@ export const leadValidation = {
     status: z.enum(LEAD_STATUSES).optional(),
     source: z.string().optional(),
     search: z.string().optional(),
+    assignedTo: z.string().optional(),
   }),
 
   idParam: z.object({ id: z.string().min(8) }),
