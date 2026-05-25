@@ -50,6 +50,40 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 
+/**
+ * Friendly API index — hitting the bare host (e.g. http://localhost:5001/)
+ * used to return a 404 "Route not found" which looked like a misconfiguration.
+ * We now return a 200 with a small directory of useful endpoints so anyone
+ * landing on the root URL (browsers, monitoring tools, curl smoke tests)
+ * gets confirmation that the server is alive.
+ */
+app.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    statusCode: 200,
+    message: 'Smart Earning Pro API · running',
+    data: {
+      name: 'Smart Earning Pro · API',
+      env: env.NODE_ENV,
+      docs: '/api',
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth',
+        authProfile: '/api/auth-profile',
+        users: '/api/users',
+        courses: '/api/courses',
+        categories: '/api/categories',
+        leads: '/api/leads',
+      },
+    },
+  });
+});
+
+// Alias under `/api` so curl `/api` works too.
+app.get('/api', (_req, res) => {
+  res.redirect('/');
+});
+
 // Health check.
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, statusCode: 200, message: 'OK', data: { uptime: process.uptime() } });
