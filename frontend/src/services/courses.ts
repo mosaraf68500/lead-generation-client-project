@@ -13,6 +13,12 @@ export interface CoursesQuery {
   page?: number;
   limit?: number;
   isPublished?: boolean;
+  /**
+   * Mongoose-style sort spec — e.g. `'-enrollmentsCount'` to surface
+   * the most-enrolled courses first (used by the "Popular courses"
+   * section on the marketing home page).
+   */
+  sort?: string;
 }
 
 interface ListResult {

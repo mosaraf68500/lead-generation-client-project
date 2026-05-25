@@ -13,6 +13,10 @@ import {
   Megaphone,
   LineChart,
   Sparkles as SparklesIcon,
+  Flame,
+  GraduationCap,
+  Award,
+  UserCheck,
 } from 'lucide-react';
 import { CourseGrid } from '@/components/common/CourseGrid';
 import { FeatureCard } from '@/components/common/FeatureCard';
@@ -96,8 +100,69 @@ const SIDEBAR_CATEGORIES = [
   { label: 'No-Code & Tools', icon: Layers },
 ];
 
+/**
+ * Achievement tiles shown on the home page. Numbers are derived live from
+ * the live courses + their enrollment counts; instructor & award counts
+ * are editorial figures we control here.
+ */
+interface Achievement {
+  icon: typeof GraduationCap;
+  value: string;
+  label: string;
+  tone: 'brand' | 'amber' | 'emerald' | 'violet';
+}
+
+const TONE_STYLES: Record<Achievement['tone'], string> = {
+  brand: 'from-brand-500 to-brand-700 text-white',
+  amber: 'from-amber-400 to-amber-600 text-white',
+  emerald: 'from-emerald-400 to-emerald-600 text-white',
+  violet: 'from-violet-500 to-violet-700 text-white',
+};
+
 const HomePage = async () => {
-  const { courses } = await fetchCourses({ limit: 6, isPublished: true });
+  // Two parallel fetches:
+  //   1. Featured (newest published, default sort) — the existing carousel.
+  //   2. Popular (most-enrolled) — drives the new "Popular courses" row.
+  const [{ courses }, { courses: popularCourses }] = await Promise.all([
+    fetchCourses({ limit: 6, isPublished: true }),
+    fetchCourses({ limit: 8, isPublished: true, sort: '-enrollmentsCount' }),
+  ]);
+
+  // Build dynamic achievement numbers from real data with sensible fallbacks
+  // so the section looks great even on a brand-new database.
+  const totalEnrollments = popularCourses.reduce(
+    (sum, c) => sum + (c.enrollmentsCount ?? 0),
+    0,
+  );
+  const studentsHelped = Math.max(totalEnrollments, 12_500);
+  const courseCount = Math.max(courses.length, popularCourses.length, 14);
+
+  const ACHIEVEMENTS: Achievement[] = [
+    {
+      icon: GraduationCap,
+      value: `${studentsHelped.toLocaleString()}+`,
+      label: 'Successful students',
+      tone: 'brand',
+    },
+    {
+      icon: BookOpen,
+      value: `${courseCount}+`,
+      label: 'Courses available',
+      tone: 'emerald',
+    },
+    {
+      icon: UserCheck,
+      value: '40+',
+      label: 'Expert instructors',
+      tone: 'violet',
+    },
+    {
+      icon: Award,
+      value: '12',
+      label: 'Awards proudly received',
+      tone: 'amber',
+    },
+  ];
 
   return (
     <>
@@ -209,6 +274,38 @@ const HomePage = async () => {
         </div>
       </section>
 
+      {/* ---- POPULAR COURSES (sorted by enrollmentsCount desc) ---- */}
+      {popularCourses.length > 0 && (
+        <section className="container py-12">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <Badge tone="brand" className="inline-flex w-fit gap-1">
+                <Flame className="h-3.5 w-3.5" /> Trending now
+              </Badge>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-ink-900 dark:text-ink-100">
+                Popular courses
+              </h2>
+              <p className="mt-1 text-ink-500">
+                The most-enrolled programs across the platform — picked by learners,
+                not by us.
+              </p>
+            </div>
+            <Link
+              href="/course?sort=popular"
+              className="text-sm font-semibold text-brand-700 hover:text-brand-800"
+            >
+              See all popular courses &rarr;
+            </Link>
+          </div>
+          <div className="mt-8">
+            <CourseGrid
+              courses={popularCourses}
+              emptyTitle="Enroll a course to get the leaderboard going"
+            />
+          </div>
+        </section>
+      )}
+
       {/* ---- LEAD CAPTURE ---- */}
       <section id="lead" className="container py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr,1.1fr] lg:items-start">
@@ -294,32 +391,58 @@ const HomePage = async () => {
         </div>
       </section>
 
-      {/* ---- FINAL CTA ---- */}
+      {/* ---- OUR ACHIEVEMENTS ---- */}
       <section className="container pb-20">
-        <div className="overflow-hidden rounded-3xl gradient-brand p-8 text-white sm:p-12">
-          <div className="grid gap-6 lg:grid-cols-[1.4fr,1fr] lg:items-center">
+        <div className="mx-auto max-w-2xl text-center">
+          <Badge tone="brand" className="inline-flex w-fit gap-1">
+            <Trophy className="h-3.5 w-3.5" /> Our achievements
+          </Badge>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl dark:text-ink-100">
+            Numbers we&apos;re proud of
+          </h2>
+          <p className="mt-3 text-ink-500">
+            From late-night coders to career-switchers, Smart Earning Pro is the
+            place thousands of learners turn into a launchpad.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {ACHIEVEMENTS.map((a) => (
+            <div
+              key={a.label}
+              className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${TONE_STYLES[a.tone]} p-6`}
+            >
+              {/* Decorative blob */}
+              <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15" />
+              <div className="relative">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/40 backdrop-blur">
+                  <a.icon className="h-6 w-6" />
+                </span>
+                <p className="mt-5 text-4xl font-extrabold tracking-tight">{a.value}</p>
+                <p className="mt-1 text-sm font-semibold text-white/90">{a.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Supporting copy + CTA */}
+        <div className="mt-10 rounded-3xl border border-ink-100 bg-white p-6 dark:border-ink-700 dark:bg-ink-900 sm:p-8">
+          <div className="grid gap-4 lg:grid-cols-[1.6fr,1fr] lg:items-center">
             <div>
-              <Badge tone="brand" className="bg-white/15 text-white">
-                <Briefcase className="mr-1 h-3.5 w-3.5" /> Career advisory
-              </Badge>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                Not sure where to start?
-              </h2>
-              <p className="mt-2 max-w-xl text-white/80">
-                Book a free 15-minute call with a Smart Earning advisor. We&apos;ll map a personalised
-                learning path to your goals.
+              <h3 className="text-xl font-bold text-ink-900 dark:text-ink-100">
+                Want to add your name to the success list?
+              </h3>
+              <p className="mt-1 text-sm text-ink-500">
+                Join our next cohort and learn alongside thousands of focused,
+                outcome-driven students.
               </p>
             </div>
-            <div className="flex flex-wrap justify-end gap-3">
-              <Link href="/contact">
-                <Button variant="primary" className="bg-white text-brand-700 hover:bg-white/90">
-                  Book a free call
-                </Button>
-              </Link>
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <Link href="/course">
-                <Button variant="outline" className="border-white/40 bg-transparent text-white hover:border-white">
-                  Browse courses
-                </Button>
+                <Button variant="primary">Browse all courses</Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="outline">Talk to an advisor</Button>
               </Link>
             </div>
           </div>

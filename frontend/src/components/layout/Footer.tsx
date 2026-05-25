@@ -25,12 +25,22 @@ const links = [
       { label: 'Get started', href: '/register' },
     ],
   },
+  // New legal column — links live both here (footer grid) AND in the
+  // bottom bar so visitors can always find them.
+  {
+    label: 'Legal',
+    items: [
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms & Conditions', href: '/terms-and-conditions' },
+    ],
+  },
 ];
 
 export const Footer = () => (
   <footer className="mt-24 border-t border-ink-100 bg-white dark:border-ink-700 dark:bg-ink-900">
-    <div className="container grid gap-10 py-12 md:grid-cols-4">
-      <div>
+    {/* `md:grid-cols-5` now that we added a Legal column. */}
+    <div className="container grid gap-10 py-12 md:grid-cols-5">
+      <div className="md:col-span-2">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold text-ink-900 dark:text-ink-100">
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl gradient-brand text-white">
             SE
@@ -71,7 +81,17 @@ export const Footer = () => (
 
     <div className="border-t border-ink-100 dark:border-ink-700">
       <div className="container flex flex-col items-center justify-between gap-3 py-5 text-xs text-ink-500 md:flex-row">
-        <p>(c) {new Date().getFullYear()} Smart Earning Pro. All rights reserved.</p>
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <p>(c) {new Date().getFullYear()} Smart Earning Pro. All rights reserved.</p>
+          <span className="hidden h-3 w-px bg-ink-200 md:inline-block dark:bg-ink-700" />
+          {/* Compact legal-link row so users can find these from any page. */}
+          <Link href="/privacy-policy" className="hover:text-brand-700">
+            Privacy Policy
+          </Link>
+          <Link href="/terms-and-conditions" className="hover:text-brand-700">
+            Terms &amp; Conditions
+          </Link>
+        </div>
         <div className="flex flex-wrap items-center gap-4">
           <a href="tel:+8801700000000" className="inline-flex items-center gap-1 hover:text-brand-700">
             <Phone className="h-3.5 w-3.5" /> +880 1700-000000
