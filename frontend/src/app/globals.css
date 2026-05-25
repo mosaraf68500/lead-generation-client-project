@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------
+ * Global "no shadows" override.
+ *
+ * Tailwind's `shadow-*` utilities work by setting the `--tw-shadow` and
+ * `--tw-shadow-colored` CSS variables; the actual `box-shadow` is composed
+ * from `--tw-ring-offset-shadow`, `--tw-ring-shadow`, `--tw-shadow`. By
+ * forcing the shadow variables to a no-op everywhere, every `shadow-*`
+ * utility class flattens to no visible drop shadow, while focus `ring-*`
+ * utilities (which write to `--tw-ring-shadow`) continue to work normally.
+ * ------------------------------------------------------------------ */
+*,
+::before,
+::after {
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
+}
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface-muted text-ink-700 antialiased;
+  }
+
+  .dark body {
+    @apply bg-ink-900 text-ink-100;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-ink-900 font-semibold tracking-tight;
+  }
+
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    @apply text-ink-100;
+  }
+}
+
+@layer components {
+  .container-narrow {
+    @apply container max-w-5xl;
+  }
+
+  .gradient-brand {
+    background-image: linear-gradient(135deg, theme('colors.brand.700'), theme('colors.brand.500') 60%, theme('colors.accent.500'));
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(135deg, theme('colors.brand.700'), theme('colors.accent.500'));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
