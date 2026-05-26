@@ -16,7 +16,26 @@ const required = (key: string): string => {
 
 const mongoUri = required('MONGODB_URI');
 const secret = required('BETTER_AUTH_SECRET');
-const baseURL = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+
+// Strip trailing slashes — Better Auth concatenates paths onto baseURL
+// and a stray "/" can produce "https://host//api/auth/..." which some
+// browsers / proxies treat as a different origin.
+const rawBaseURL = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+const baseURL = rawBaseURL.replace(/\/+$/, '');
+
+// Static allow-list so a misconfigured BETTER_AUTH_URL (e.g. the prod
+// URL in local dev's `.env`) doesn't break sign-in. Add custom domains
+// here when you wire them up.
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      baseURL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://lead-generation-client-project.vercel.app',
+    ].filter(Boolean),
+  ),
+);
 
 // Cache the connection across hot reloads in development.
 const globalForMongo = globalThis as unknown as { __mongoClient?: MongoClient };
@@ -56,7 +75,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [bearer()],
-  trustedOrigins: [baseURL],
+  trustedOrigins,
 });
 
 export type Auth = typeof auth;
