@@ -2,14 +2,20 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
-import { Search, Filter, X, Tag, BadgePercent, Layers, GraduationCap, DollarSign } from 'lucide-react';
+import { Search, Filter, X, Tag, BadgePercent, GraduationCap, DollarSign } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { COURSE_LEVELS, type CourseLevel } from '@/types';
 import { cn } from '@/utils';
 
 interface CourseFiltersProps {
-  categories: string[];
+  /**
+   * Categories used to be a filterable facet, but the product moved
+   * away from surfacing courses under a category in the UX. The prop
+   * is kept (optional) so existing parents don't break — it's a no-op
+   * here.
+   */
+  categories?: string[];
   /** Top-end of the price slider; defaults to 500 when not provided. */
   priceCeiling?: number;
 }
@@ -51,13 +57,12 @@ const FilterSection = ({
   );
 };
 
-export const CourseFilters = ({ categories, priceCeiling = 500 }: CourseFiltersProps) => {
+export const CourseFilters = ({ priceCeiling = 500 }: CourseFiltersProps) => {
   const router = useRouter();
   const search = useSearchParams();
   const [pending, startTransition] = useTransition();
 
   const activeSearch = search.get('search') ?? '';
-  const activeCategory = search.get('category') ?? '';
   const activeLevel = (search.get('level') as CourseLevel | '') ?? '';
   const activeMin = Number(search.get('minPrice') ?? 0);
   const activeMax = Number(search.get('maxPrice') ?? priceCeiling);
@@ -89,7 +94,6 @@ export const CourseFilters = ({ categories, priceCeiling = 500 }: CourseFiltersP
   const activeChips = useMemo(() => {
     const chips: Array<{ key: string; label: string; onClear: () => void }> = [];
     if (activeSearch) chips.push({ key: 'search', label: `Search: ${activeSearch}`, onClear: () => commit({ search: undefined }) });
-    if (activeCategory) chips.push({ key: 'category', label: activeCategory, onClear: () => commit({ category: undefined }) });
     if (activeLevel) chips.push({ key: 'level', label: activeLevel, onClear: () => commit({ level: undefined }) });
     if (activeOnSale) chips.push({ key: 'onSale', label: 'On sale', onClear: () => commit({ onSale: undefined }) });
     if (activeMin > 0 || (activeMax > 0 && activeMax < priceCeiling))
@@ -100,7 +104,7 @@ export const CourseFilters = ({ categories, priceCeiling = 500 }: CourseFiltersP
       });
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSearch, activeCategory, activeLevel, activeOnSale, activeMin, activeMax, priceCeiling]);
+  }, [activeSearch, activeLevel, activeOnSale, activeMin, activeMax, priceCeiling]);
 
   return (
     <aside className="overflow-hidden rounded-md border border-ink-100 bg-white shadow-sm dark:border-ink-700 dark:bg-ink-900">
@@ -151,51 +155,6 @@ export const CourseFilters = ({ categories, priceCeiling = 500 }: CourseFiltersP
             className="pl-9"
           />
         </form>
-      </FilterSection>
-
-      {/* Category */}
-      <FilterSection title="Category" icon={Layers}>
-        <ul className="space-y-1.5 text-sm">
-          <li>
-            <button
-              type="button"
-              onClick={() => commit({ category: undefined })}
-              className={cn(
-                'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left',
-                !activeCategory
-                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-700/20'
-                  : 'text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700',
-              )}
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px]">
-                {!activeCategory ? '\u2713' : ''}
-              </span>
-              All categories
-            </button>
-          </li>
-          {categories.map((category) => {
-            const active = activeCategory === category;
-            return (
-              <li key={category}>
-                <button
-                  type="button"
-                  onClick={() => commit({ category: active ? undefined : category })}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left',
-                    active
-                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-700/20'
-                      : 'text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700',
-                  )}
-                >
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px]">
-                    {active ? '\u2713' : ''}
-                  </span>
-                  {category}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
       </FilterSection>
 
       {/* Level */}

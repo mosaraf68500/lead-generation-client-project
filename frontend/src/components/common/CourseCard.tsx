@@ -114,11 +114,9 @@ export const CourseCard = ({ course }: CourseCardProps) => {
         </button>
       </div>
 
-      {/* Body */}
+      {/* Body — the legacy category pill was removed; courses no longer
+          surface a category in the user-facing UX. */}
       <div className="flex flex-1 flex-col gap-3 p-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
-          {course.category}
-        </p>
         <h3 className="text-lg font-semibold text-ink-900 group-hover:text-brand-700 dark:text-ink-100">
           {course.title}
         </h3>

@@ -13,22 +13,14 @@ import {
   LifeBuoy,
   Search,
   Phone,
-  HelpCircle,
   ChevronDown,
   Heart,
   BookmarkPlus,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
   MessageCircle,
   Sun,
   Moon,
   LogIn,
   User as UserIcon,
-  PackageSearch,
-  Globe,
-  LayoutGrid,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -37,23 +29,21 @@ import { useWishlist } from '@/context/WishlistContext';
 import { cn } from '@/utils';
 
 /**
- * ShopBangla-style three-tier global header.
+ * Two-tier global header.
  *
- *  Tier 1 (top, light gray): phone + WhatsApp (left)  |  track order, FAQ,
- *                            dark/light toggle, language, social icons (right)
- *  Tier 2 (middle, white):   logo + brand + tagline   |  search bar
- *                            with green submit button |  wishlist, cart with
- *                            currency badge, account/login
- *  Tier 3 (main menu):       green "BROWSE CATEGORIES" tab (left, fixed
- *                            width that aligns with the homepage category
- *                            sidebar)                 |  Home, Course,
- *                            Special Offers, Blog, Contact (active item
- *                            shown with a green underline)
+ *  Tier A (brand bar):  logo + brand + tagline   |  search bar
+ *                       with brand submit button |  wishlist, interested,
+ *                       account/login
+ *  Tier B (main menu):  Home, About, Course, Special Offers, Contact.
+ *
+ * The legacy utility tier (phone numbers, FAQ link, language switcher,
+ * social icons) was removed — those affordances live in the footer + the
+ * mobile panel now.
  */
 
+// Contact constants surfaced in the mobile panel's bottom bar.
 const PHONE_NUMBER = '01783175638';
 const PHONE_TEL = '+8801783175638';
-const WHATSAPP_NUMBER = '01522114096';
 const WHATSAPP_LINK = '8801522114096';
 
 const MAIN_MENU = [
@@ -62,16 +52,6 @@ const MAIN_MENU = [
   { label: 'Course', href: '/course' },
   { label: 'Special Offers', href: '/special-offers' },
   { label: 'Contact', href: '/contact' },
-];
-
-const CATEGORIES = [
-  'Business',
-  'Design',
-  'Engineering',
-  'Marketing',
-  'No-Code',
-  'Productivity',
-  'Finance',
 ];
 
 const dashboardPathForRole = (role: string): string => {
@@ -106,23 +86,6 @@ const ThemeToggleButton = ({ tone = 'dark' }: { tone?: 'dark' | 'light' }) => {
   );
 };
 
-const SocialIcons = () => (
-  <div className="flex items-center gap-1.5 text-ink-500">
-    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="transition hover:text-brand-600">
-      <Facebook className="h-3.5 w-3.5" />
-    </a>
-    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="transition hover:text-brand-600">
-      <Twitter className="h-3.5 w-3.5" />
-    </a>
-    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="transition hover:text-brand-600">
-      <Instagram className="h-3.5 w-3.5" />
-    </a>
-    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="transition hover:text-brand-600">
-      <Linkedin className="h-3.5 w-3.5" />
-    </a>
-  </div>
-);
-
 export const Navbar = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -132,7 +95,6 @@ export const Navbar = () => {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -146,57 +108,12 @@ export const Navbar = () => {
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    // Header now sits on the brand peach band (`brand-200` = #FFD5B8).
-    // Inner tiers use slightly different brand shades so the three
-    // rows still read as distinct hierarchy levels.
+    // Header sits on the brand peach band (`brand-200` = #FFD5B8). The
+    // utility (Tier 1) bar was removed; phone / WhatsApp / theme toggle
+    // affordances now live in the mobile panel + footer.
     <header className="sticky top-0 z-40 bg-brand-200 shadow-sm dark:bg-ink-900">
       {/* ============================================================== */}
-      {/* TIER 1 — utility bar                                            */}
-      {/* ============================================================== */}
-      <div className="hidden border-b border-brand-300/40 bg-brand-100 md:block dark:border-ink-700 dark:bg-ink-900">
-        <div className="container flex h-9 items-center justify-between text-xs text-ink-700 dark:text-ink-100">
-          <div className="flex items-center gap-5">
-            <a
-              href={`tel:${PHONE_TEL}`}
-              className="inline-flex items-center gap-1.5 font-medium hover:text-brand-600"
-            >
-              <Phone className="h-3.5 w-3.5 text-brand-600" />
-              {PHONE_NUMBER}
-            </a>
-            <a
-              href={`https://wa.me/${WHATSAPP_LINK}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-medium hover:text-brand-600"
-            >
-              <MessageCircle className="h-3.5 w-3.5 text-brand-600" />
-              {WHATSAPP_NUMBER}
-            </a>
-          </div>
-
-          <div className="flex items-center gap-4 text-ink-500">
-            <Link href="/student" className="inline-flex items-center gap-1 hover:text-brand-600">
-              <PackageSearch className="h-3.5 w-3.5" /> Track Order
-            </Link>
-            <Link href="/contact" className="inline-flex items-center gap-1 hover:text-brand-600">
-              <HelpCircle className="h-3.5 w-3.5" /> FAQ
-            </Link>
-            <ThemeToggleButton tone="dark" />
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 hover:text-brand-600"
-              aria-label="Language"
-            >
-              <Globe className="h-3.5 w-3.5" /> English <ChevronDown className="h-3 w-3" />
-            </button>
-            <span className="h-3.5 w-px bg-ink-100 dark:bg-ink-700" />
-            <SocialIcons />
-          </div>
-        </div>
-      </div>
-
-      {/* ============================================================== */}
-      {/* TIER 2 — brand + search + cart/wishlist/account                 */}
+      {/* TIER A — brand + search + cart/wishlist/account                 */}
       {/* ============================================================== */}
       <div className="border-b border-brand-300/40 bg-brand-200 dark:border-ink-700 dark:bg-ink-900">
         <div className="container flex h-20 items-center gap-6">
@@ -379,7 +296,7 @@ export const Navbar = () => {
                         }}
                         className="flex w-full items-center gap-2 border-t border-ink-100 px-4 py-2.5 text-left text-sm text-ink-700 transition hover:bg-surface-muted dark:border-ink-700 dark:text-ink-100 dark:hover:bg-ink-700"
                       >
-                        <LogOut className="h-4 w-4" /> Sign out
+                        <LogOut className="h-4 w-4" /> Logout
                       </button>
                     </div>
                   </>
@@ -415,49 +332,11 @@ export const Navbar = () => {
       </div>
 
       {/* ============================================================== */}
-      {/* TIER 3 — categories tab + main menu                             */}
+      {/* TIER B — main menu (Home / About / Course / Offers / Contact). */}
       {/* ============================================================== */}
       <nav className="hidden border-b border-brand-300/40 bg-brand-200 md:block dark:border-ink-700 dark:bg-ink-900">
         <div className="container flex items-stretch">
-          {/* Categories tab (anchored, matches the homepage sidebar width) */}
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setCategoriesOpen((v) => !v)}
-              className="flex h-12 w-[260px] items-center justify-between gap-3 rounded-t-md bg-brand-600 px-4 text-sm font-bold uppercase tracking-wider text-white"
-            >
-              <span className="inline-flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4" /> Browse Categories
-              </span>
-              <ChevronDown className={cn('h-4 w-4 transition', categoriesOpen && 'rotate-180')} />
-            </button>
-            {categoriesOpen && (
-              <>
-                <button
-                  type="button"
-                  aria-label="Close categories"
-                  className="fixed inset-0 z-10 cursor-default"
-                  onClick={() => setCategoriesOpen(false)}
-                />
-                <ul className="absolute left-0 top-full z-20 w-[260px] overflow-hidden rounded-b-md border border-ink-100 bg-white shadow-cardHover dark:border-ink-700 dark:bg-ink-900">
-                  {CATEGORIES.map((category) => (
-                    <li key={category}>
-                      <Link
-                        href={`/course?category=${encodeURIComponent(category)}`}
-                        onClick={() => setCategoriesOpen(false)}
-                        className="block border-b border-ink-100 px-4 py-2.5 text-sm text-ink-700 transition last:border-b-0 hover:bg-brand-50 hover:text-brand-700 dark:border-ink-700 dark:text-ink-100"
-                      >
-                        {category}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-
-          {/* Main nav */}
-          <ul className="ml-8 flex items-center gap-1 text-sm">
+          <ul className="flex items-center gap-1 text-sm">
             {MAIN_MENU.map((item) => {
               const active = isActive(item.href);
               return (
@@ -547,25 +426,6 @@ export const Navbar = () => {
             ))}
           </ul>
 
-          <details className="rounded-md border border-ink-100 dark:border-ink-700">
-            <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-ink-700 dark:text-ink-100">
-              Browse categories
-            </summary>
-            <ul className="border-t border-ink-100 dark:border-ink-700">
-              {CATEGORIES.map((category) => (
-                <li key={category}>
-                  <Link
-                    href={`/course?category=${encodeURIComponent(category)}`}
-                    onClick={() => setMobileOpen(false)}
-                    className="block px-3 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 dark:text-ink-100"
-                  >
-                    {category}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </details>
-
           <div className="border-t border-ink-100 pt-3 dark:border-ink-700">
             {isAuthenticated && user ? (
               <div className="space-y-2">
@@ -619,7 +479,7 @@ export const Navbar = () => {
                   }}
                   className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-semibold text-ink-700 hover:bg-ink-100 dark:text-ink-100 dark:hover:bg-ink-700"
                 >
-                  <LogOut className="h-4 w-4" /> Sign out
+                  <LogOut className="h-4 w-4" /> Logout
                 </button>
               </div>
             ) : (
@@ -629,14 +489,14 @@ export const Navbar = () => {
                   onClick={() => setMobileOpen(false)}
                   className="inline-flex h-11 items-center justify-center gap-1 rounded-md border border-ink-100 text-sm font-semibold text-ink-700 dark:border-ink-700 dark:text-ink-100"
                 >
-                  <LogIn className="h-4 w-4" /> Sign in
+                  <LogIn className="h-4 w-4" /> Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
                   className="inline-flex h-11 items-center justify-center rounded-md bg-brand-500 text-sm font-semibold text-white"
                 >
-                  Get started
+                  Register
                 </Link>
               </div>
             )}

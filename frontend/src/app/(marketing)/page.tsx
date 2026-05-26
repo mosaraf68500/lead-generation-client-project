@@ -1,16 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  ArrowRight,
   BookOpen,
   Trophy,
-  Briefcase,
-  Layers,
-  Code2,
-  Palette,
-  Megaphone,
-  LineChart,
-  Sparkles as SparklesIcon,
+  Rocket,
+  Star,
   Flame,
   GraduationCap,
   Award,
@@ -22,16 +16,6 @@ import { fetchCourses } from '@/services/courses';
 import type { Course } from '@/types';
 
 export const dynamic = 'force-dynamic';
-
-const SIDEBAR_CATEGORIES = [
-  { label: 'Business & Finance', icon: Briefcase },
-  { label: 'Design & Creative', icon: Palette },
-  { label: 'Engineering & Code', icon: Code2 },
-  { label: 'Marketing & Sales', icon: Megaphone },
-  { label: 'Data & Analytics', icon: LineChart },
-  { label: 'Personal Growth', icon: SparklesIcon },
-  { label: 'No-Code & Tools', icon: Layers },
-];
 
 /**
  * Achievement tiles shown on the home page. Numbers are derived live from
@@ -85,12 +69,14 @@ const CourseTile = ({ course }: { course: Course }) => (
 );
 
 const HomePage = async () => {
-  // Single fetch — the "Featured courses" carousel was removed, so only
-  // the popular-courses row needs data. We sort by `-enrollmentsCount`
-  // and grab a slightly larger page so the achievements math has a
-  // meaningful course count to fall back on.
+  // Single fetch — drives the Popular Courses row. The product team
+  // curates ~11 evergreen courses (Photo Editing, Video Editing,
+  // Microsoft Excel, Data Entry, Social Marketing, Spoken English,
+  // Facebook Marketing, Learn Al Quran, Lead Generation, Fiverr/Upwork,
+  // YouTube Marketing) which should all surface here, so the limit is
+  // 12 to give a touch of headroom over the current 11.
   const { courses: popularCourses } = await fetchCourses({
-    limit: 8,
+    limit: 12,
     isPublished: true,
     sort: '-enrollmentsCount',
   });
@@ -134,61 +120,112 @@ const HomePage = async () => {
   return (
     <>
       {/* ============================================================== */}
-      {/* HERO — left sidebar (categories) + right banner                 */}
+      {/* HERO — full-width, soft purple banner with a transparent       */}
+      {/*         cut-out person on the right.                            */}
+      {/*                                                                 */}
+      {/* Brand orange still drives the CTA buttons + headline accent so  */}
+      {/* the brand identity stays consistent; the purple is purely a    */}
+      {/* mood/background colour for this hero band.                      */}
       {/* ============================================================== */}
       <section className="container pt-6">
-        <div className="grid items-stretch gap-6 lg:grid-cols-[260px,1fr]">
-          {/* Left: category sidebar, width-aligned with the "Browse Categories" navbar tab */}
-          <aside className="hidden rounded-md border border-ink-100 bg-white p-3 lg:block dark:border-ink-700 dark:bg-ink-900">
-            <ul className="divide-y divide-ink-100 dark:divide-ink-700">
-              {SIDEBAR_CATEGORIES.map(({ label, icon: Icon }) => (
-                <li key={label}>
-                  <Link
-                    href={`/course?category=${encodeURIComponent(label.split(' ')[0])}`}
-                    className="flex items-center gap-3 px-2 py-2.5 text-sm text-ink-700 transition hover:text-brand-700 dark:text-ink-100"
-                  >
-                    <Icon className="h-4 w-4 text-brand-600" />
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </aside>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 dark:from-ink-900 dark:via-ink-900 dark:to-ink-800">
+          {/* Decorative soft blobs so the flat purple feels alive. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -top-20 -right-16 h-72 w-72 rounded-full bg-white/40 blur-2xl"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-purple-400/30 blur-2xl"
+          />
 
-          {/* Right: banner */}
-          <div className="relative overflow-hidden rounded-md bg-surface-muted dark:bg-ink-900">
-            <div className="grid gap-6 px-6 py-10 sm:px-10 sm:py-12 md:grid-cols-[1.1fr,1fr] md:items-center md:py-16">
-              <div className="space-y-5">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-600">
-                  Smart Earning Pro
-                </p>
-                <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-900 sm:text-5xl md:text-6xl dark:text-ink-100">
-                  Your Skills,
-                  <br />
-                  <span className="text-brand-600">Live Earning</span>
-                </h1>
-                <p className="max-w-md text-sm text-ink-500 sm:text-base">
-                  Career-focused online courses, mentor reviews and a community that compounds.
-                  Add a course to your plan and start earning back what you learn.
-                </p>
+          <div className="relative grid gap-8 px-6 py-12 sm:px-10 sm:py-14 md:grid-cols-[1.15fr,1fr] md:items-end md:py-0 md:pt-14">
+            {/* ── Left column: copy + CTAs + social proof ───────────── */}
+            <div className="space-y-6 md:pb-14">
+              {/* Pill badge */}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-1.5 text-xs font-bold text-brand-700 backdrop-blur dark:bg-ink-700 dark:text-brand-200">
+                <Rocket className="h-3.5 w-3.5" />
+                Start Learning Today
+              </span>
+
+              {/* Headline with brand-color accent on the brand name. */}
+              <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-ink-900 sm:text-5xl md:text-6xl dark:text-ink-100">
+                Upgrade Your Skills{' '}
+                <span className="text-brand-600">With Smart Earning Pro</span>
+              </h1>
+
+              <p className="max-w-xl text-sm leading-relaxed text-ink-700 sm:text-base dark:text-ink-100">
+                Join thousands of learners and build the skills you need to grow your career.
+                Practical courses, expert guidance and projects — all in one place.
+              </p>
+
+              {/* Dual CTA — visitors who are logged out land on /login;
+                  the "Join Us" secondary CTA points to /register so we
+                  still expose sign-up without using the word. */}
+              <div className="flex flex-wrap items-center gap-3">
                 <Link
-                  href="/course"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-brand-500 px-7 text-sm font-bold text-white shadow-card transition hover:bg-brand-600"
+                  href="/login"
+                  className="inline-flex h-12 items-center justify-center rounded-md bg-brand-600 px-7 text-sm font-bold text-white transition hover:bg-brand-700"
                 >
-                  Start Learning <ArrowRight className="h-4 w-4" />
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex h-12 items-center justify-center rounded-md bg-brand-500 px-7 text-sm font-bold text-white transition hover:bg-brand-600"
+                >
+                  Join Us
                 </Link>
               </div>
 
-              <div className="relative hidden h-[340px] w-full md:block">
-                <Image
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"
-                  alt="Learners collaborating"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="rounded-md object-cover object-center"
-                />
+              {/* Social proof — three avatar circles, 5-star rating,
+                  learner count. Uses Unsplash avatars so the row still
+                  looks alive on a fresh database. */}
+              <div className="flex items-center gap-4 pt-2">
+                <div className="flex -space-x-2">
+                  {[
+                    'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=128&q=80',
+                    'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=128&q=80',
+                    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=128&q=80',
+                  ].map((src, i) => (
+                    <span
+                      key={src}
+                      className="relative inline-block h-10 w-10 overflow-hidden rounded-full border-2 border-white"
+                    >
+                      <Image src={src} alt={`Happy learner ${i + 1}`} fill sizes="40px" className="object-cover" />
+                    </span>
+                  ))}
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-0.5 text-amber-500">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-500" />
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">
+                    <span className="text-base font-extrabold">4.8k+</span> Happy Learners
+                  </p>
+                </div>
               </div>
+            </div>
+
+            {/* ── Right column: transparent cut-out students ──────────
+                Real photo of two learners with a laptop on a clean
+                transparent background — the purple band shows through
+                behind them, giving the cutout look from the reference
+                design.
+                To swap with your own asset:
+                  1. Upload a transparent PNG to Cloudinary (already in
+                     `next.config.mjs`).
+                  2. Replace the `src` below with the Cloudinary URL. */}
+            <div className="relative hidden h-[460px] w-full md:block">
+              <Image
+                src="https://pngimg.com/uploads/student/student_PNG163.png"
+                alt="Two learners exploring a course together on a laptop"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-contain object-bottom"
+              />
             </div>
           </div>
         </div>

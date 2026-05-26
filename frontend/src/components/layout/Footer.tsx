@@ -21,8 +21,8 @@ const links = [
   {
     label: 'Account',
     items: [
-      { label: 'Sign in', href: '/login' },
-      { label: 'Get started', href: '/register' },
+      { label: 'Login', href: '/login' },
+      { label: 'Register', href: '/register' },
     ],
   },
   // New legal column — links live both here (footer grid) AND in the

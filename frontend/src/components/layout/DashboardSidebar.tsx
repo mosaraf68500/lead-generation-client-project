@@ -19,7 +19,6 @@ import {
   Palette,
   Megaphone,
   Radar,
-  Tags,
   LineChart,
   Contact2,
 } from 'lucide-react';
@@ -53,7 +52,9 @@ const ITEMS: SidebarItem[] = [
   { label: 'My Leads', href: '/staff/leads', icon: Inbox, roles: ['staff'], group: 'Main Menu' },
   { label: 'Leads', href: '/admin/leads', icon: Inbox, roles: ['admin', 'super_admin'], group: 'Main Menu' },
   { label: 'Courses', href: '/admin/courses', icon: GraduationCap, roles: ['admin', 'super_admin'], group: 'Main Menu' },
-  { label: 'Categories', href: '/admin/categories', icon: Tags, roles: ['admin', 'super_admin'], group: 'Main Menu' },
+  // 'Categories' nav was removed — courses no longer live under a
+  // category in the visible UX. The model + page remain on the backend
+  // (reachable by direct URL) but are no longer linked from anywhere.
   { label: 'Customers', href: '/admin/customers', icon: Contact2, roles: ['admin', 'super_admin'], group: 'Main Menu' },
   { label: 'Promotions', href: '/super-admin/promotions', icon: Megaphone, roles: ['admin', 'super_admin'], group: 'Main Menu' },
   { label: 'Analytics', href: '/admin/analytics', icon: LineChart, roles: ['admin', 'super_admin'], group: 'Main Menu' },
