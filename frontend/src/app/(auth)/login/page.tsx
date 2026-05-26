@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,7 +35,13 @@ const dashboardPathForRole = (role: string | undefined): string => {
   }
 };
 
-const LoginPage = () => {
+/**
+ * Inner form — split out so the page can wrap it in a <Suspense>.
+ * Next.js's static optimiser requires any component that calls
+ * `useSearchParams()` to live below a Suspense boundary, otherwise the
+ * `/login` page can't be prerendered and the production build fails.
+ */
+const LoginForm = () => {
   const router = useRouter();
   const search = useSearchParams();
   const { push } = useToast();
@@ -165,5 +171,16 @@ const LoginPage = () => {
     </AuthLayout>
   );
 };
+
+/**
+ * Default export — wraps `LoginForm` in a Suspense boundary so the page
+ * can be statically generated even though `useSearchParams()` is used
+ * inside the form.
+ */
+const LoginPage = () => (
+  <Suspense fallback={null}>
+    <LoginForm />
+  </Suspense>
+);
 
 export default LoginPage;

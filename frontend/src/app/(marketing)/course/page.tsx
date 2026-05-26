@@ -194,7 +194,7 @@ const CoursesPage = async ({ searchParams }: PageProps) => {
             <div className="rounded-md border border-dashed border-ink-100 bg-white p-6 text-sm text-ink-500 dark:border-ink-700 dark:bg-ink-900">
               <p className="inline-flex items-center gap-2">
                 <Compass className="h-4 w-4 text-brand-600" />
-                Tip: try the "On sale only" toggle, or widen the price range.
+                Tip: try the &ldquo;On sale only&rdquo; toggle, or widen the price range.
               </p>
             </div>
           )}

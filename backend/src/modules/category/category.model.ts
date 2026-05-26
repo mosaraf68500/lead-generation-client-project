@@ -17,7 +17,10 @@ const categorySchema = new Schema<ICategoryDocument>(
       virtuals: true,
       transform: (_doc, ret) => {
         ret.id = ret._id;
-        delete ret.__v;
+        // TS strict mode rejects `delete ret.__v` because `__v` is typed
+        // as required on the Mongoose `LeanDocument`. Cast through a
+        // generic record so the runtime cleanup still works.
+        delete (ret as Record<string, unknown>).__v;
         return ret;
       },
     },

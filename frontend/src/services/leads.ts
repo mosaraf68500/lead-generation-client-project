@@ -17,9 +17,14 @@ interface ListResult {
   meta?: PaginatedMeta;
 }
 
-const toQueryString = (q: Record<string, unknown>): string => {
+/**
+ * Helper accepts any object — we cast to a plain record inside so
+ * `Object.entries` types cleanly, but the call site stays type-safe
+ * (callers pass `LeadsQuery`, `CsvExportQuery`, etc.).
+ */
+const toQueryString = (q: object): string => {
   const params = new URLSearchParams();
-  Object.entries(q).forEach(([k, v]) => {
+  Object.entries(q as Record<string, unknown>).forEach(([k, v]) => {
     if (v !== undefined && v !== '' && v !== null) params.set(k, String(v));
   });
   const qs = params.toString();

@@ -52,7 +52,9 @@ const leadSchema = new Schema<ILeadDocument>(
       virtuals: true,
       transform: (_doc, ret) => {
         ret.id = ret._id;
-        delete ret.__v;
+        // See category.model — `__v` is typed required on the lean doc;
+        // cast through a generic record so `delete` is well-typed.
+        delete (ret as Record<string, unknown>).__v;
         return ret;
       },
     },

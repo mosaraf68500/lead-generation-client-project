@@ -15,7 +15,11 @@ import {
 } from 'react';
 import { cn } from '@/utils';
 
-export type ToastVariant = 'success' | 'error' | 'info';
+// `warning` was added for destructive-but-successful operations
+// (e.g. deactivating a category, which cascades to unpublishing every
+// course beneath it). Keeps the green/red split honest — those events
+// aren't quite "success" but also aren't a failure.
+export type ToastVariant = 'success' | 'error' | 'info' | 'warning';
 
 interface Toast {
   id: string;
@@ -34,6 +38,7 @@ const variantClasses: Record<ToastVariant, string> = {
   success: 'border-accent-500/30 bg-white text-ink-900',
   error: 'border-red-300 bg-white text-red-700',
   info: 'border-brand-200 bg-white text-ink-900',
+  warning: 'border-amber-300 bg-amber-50 text-amber-900',
 };
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
