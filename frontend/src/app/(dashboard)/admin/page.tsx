@@ -20,7 +20,12 @@ import { fetchCourses, fetchCourseAnalytics } from '@/services/courses';
 import { fetchUsers } from '@/services/users';
 import { formatDate } from '@/utils';
 import { LEAD_STATUS_META } from '@/types';
-import { OverviewActions, PERIOD_OPTIONS, type PeriodId } from './OverviewActions';
+import { OverviewActions } from './OverviewActions';
+// IMPORTANT: pull the period constants from the plain-TS module, NOT from
+// `./OverviewActions` (which is a `'use client'` file — importing from
+// there into this Server Component triggers the "Attempted to call find()
+// from the server" error).
+import { PERIOD_OPTIONS, type PeriodId } from './period';
 
 export const dynamic = 'force-dynamic';
 

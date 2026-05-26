@@ -19,15 +19,14 @@ import { useState, useTransition } from 'react';
 import { Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils';
+// PERIOD_OPTIONS / PeriodId live in a plain-TS sibling module so they can
+// be safely imported by Server Components too (see `./period.ts`).
+import { PERIOD_OPTIONS, type PeriodId } from './period';
 
-export const PERIOD_OPTIONS = [
-  { id: 'today', label: 'Today' },
-  { id: 'week', label: 'This week' },
-  { id: 'month', label: 'This month' },
-  { id: 'year', label: 'This year' },
-] as const;
-
-export type PeriodId = (typeof PERIOD_OPTIONS)[number]['id'];
+// Re-export so existing import paths (`from './OverviewActions'`) keep
+// working. Server-side consumers should import from `./period` directly.
+export { PERIOD_OPTIONS };
+export type { PeriodId };
 
 export const OverviewActions = ({
   defaultPeriod = 'today',
