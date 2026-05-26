@@ -29,9 +29,23 @@ const app: Express = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
+// ─────────────────────────────────────────────────────────────────────
+// CORS — explicit allow-list.
+//
+// Only the origins listed below can call this API from a browser.
+// `credentials: true` is required because Better Auth sets cookies on
+// the API origin and the frontend reads them cross-site.
+//
+// To allow a new host (e.g. a custom domain), add its scheme + host
+// (no trailing slash) to the array below and redeploy.
+// ─────────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: env.TRUSTED_ORIGINS,
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://lead-generation-client-project.vercel.app',
+    ],
     credentials: true,
   }),
 );
