@@ -28,21 +28,36 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // ─────────────────────────────────────────────────────────────
+        // Brand palette — built around the three anchor colors the
+        // business uses across collateral:
+        //   • header bg  → `brand-200` = #FFD5B8 (light peach)
+        //   • footer bg  → `brand-500` = #FF6900 (vivid orange)
+        //   • button bg  → `brand-600` = #F54900 (deep red-orange)
+        //
+        // The remaining steps were tuned (lightness ramped) so they
+        // sit on a consistent hue line, which keeps every Tailwind
+        // `bg-brand-*` / `text-brand-*` / `border-brand-*` class
+        // visually coherent without us editing each component.
+        // ─────────────────────────────────────────────────────────────
         brand: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
+          50: '#fff4ec',
+          100: '#ffe8d5',
+          200: '#ffd5b8', // ← header bg
+          300: '#ffb585',
+          400: '#ff8c4a',
+          500: '#ff6900', // ← footer bg
+          600: '#f54900', // ← primary button bg
+          700: '#c73900',
+          800: '#9c2d00',
+          900: '#6b1f00',
+          950: '#3d1100',
         },
+        // Accent stays inside the brand-orange family so any
+        // `text-accent-*` / `bg-accent-*` consumer stays on palette.
         accent: {
-          500: '#22c55e',
-          600: '#16a34a',
+          500: '#ff6900',
+          600: '#f54900',
         },
         ink: {
           900: '#0b1220',

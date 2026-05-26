@@ -146,11 +146,14 @@ export const Navbar = () => {
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-sm dark:bg-ink-900">
+    // Header now sits on the brand peach band (`brand-200` = #FFD5B8).
+    // Inner tiers use slightly different brand shades so the three
+    // rows still read as distinct hierarchy levels.
+    <header className="sticky top-0 z-40 bg-brand-200 shadow-sm dark:bg-ink-900">
       {/* ============================================================== */}
       {/* TIER 1 — utility bar                                            */}
       {/* ============================================================== */}
-      <div className="hidden border-b border-ink-100 bg-[#f7f7f7] md:block dark:border-ink-700 dark:bg-ink-900">
+      <div className="hidden border-b border-brand-300/40 bg-brand-100 md:block dark:border-ink-700 dark:bg-ink-900">
         <div className="container flex h-9 items-center justify-between text-xs text-ink-700 dark:text-ink-100">
           <div className="flex items-center gap-5">
             <a
@@ -195,7 +198,7 @@ export const Navbar = () => {
       {/* ============================================================== */}
       {/* TIER 2 — brand + search + cart/wishlist/account                 */}
       {/* ============================================================== */}
-      <div className="border-b border-ink-100 bg-white dark:border-ink-700 dark:bg-ink-900">
+      <div className="border-b border-brand-300/40 bg-brand-200 dark:border-ink-700 dark:bg-ink-900">
         <div className="container flex h-20 items-center gap-6">
           {/* Logo + brand */}
           <Link href="/" className="flex shrink-0 items-center gap-2.5">
@@ -414,7 +417,7 @@ export const Navbar = () => {
       {/* ============================================================== */}
       {/* TIER 3 — categories tab + main menu                             */}
       {/* ============================================================== */}
-      <nav className="hidden border-b border-ink-100 bg-white md:block dark:border-ink-700 dark:bg-ink-900">
+      <nav className="hidden border-b border-brand-300/40 bg-brand-200 md:block dark:border-ink-700 dark:bg-ink-900">
         <div className="container flex items-stretch">
           {/* Categories tab (anchored, matches the homepage sidebar width) */}
           <div className="relative shrink-0">

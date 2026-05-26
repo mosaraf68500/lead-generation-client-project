@@ -20,17 +20,21 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils';
 
+// Mirrors the brand scale defined in `tailwind.config.ts`. Anchors:
+//   • brand-200 = #FFD5B8 (header bg)
+//   • brand-500 = #FF6900 (footer bg)
+//   • brand-600 = #F54900 (primary button bg)
 const BRAND_SCALE = [
-  { name: 'brand-50', token: '#f0fdf4' },
-  { name: 'brand-100', token: '#dcfce7' },
-  { name: 'brand-200', token: '#bbf7d0' },
-  { name: 'brand-300', token: '#86efac' },
-  { name: 'brand-400', token: '#4ade80' },
-  { name: 'brand-500', token: '#22c55e' },
-  { name: 'brand-600', token: '#16a34a' },
-  { name: 'brand-700', token: '#15803d' },
-  { name: 'brand-800', token: '#166534' },
-  { name: 'brand-900', token: '#14532d' },
+  { name: 'brand-50', token: '#fff4ec' },
+  { name: 'brand-100', token: '#ffe8d5' },
+  { name: 'brand-200', token: '#ffd5b8' },
+  { name: 'brand-300', token: '#ffb585' },
+  { name: 'brand-400', token: '#ff8c4a' },
+  { name: 'brand-500', token: '#ff6900' },
+  { name: 'brand-600', token: '#f54900' },
+  { name: 'brand-700', token: '#c73900' },
+  { name: 'brand-800', token: '#9c2d00' },
+  { name: 'brand-900', token: '#6b1f00' },
 ];
 
 const INK_SCALE = [

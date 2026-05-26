@@ -55,12 +55,25 @@
     @apply container max-w-5xl;
   }
 
+  /* Fiery brand-orange sweep. Re-tuned because `brand-500` and
+     `accent-500` now share the same hex (both #FF6900) — using
+     `brand.400` as the final stop restores a real 3-color gradient
+     instead of collapsing into a 2-stop ramp. */
   .gradient-brand {
-    background-image: linear-gradient(135deg, theme('colors.brand.700'), theme('colors.brand.500') 60%, theme('colors.accent.500'));
+    background-image: linear-gradient(
+      135deg,
+      theme('colors.brand.700'),
+      theme('colors.brand.500') 60%,
+      theme('colors.brand.400')
+    );
   }
 
   .gradient-text {
-    background-image: linear-gradient(135deg, theme('colors.brand.700'), theme('colors.accent.500'));
+    background-image: linear-gradient(
+      135deg,
+      theme('colors.brand.700'),
+      theme('colors.brand.500')
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
